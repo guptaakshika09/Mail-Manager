@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+<body>
+
+    <h1>Mail Scheduler</h1>
+    <br>
+    <form action="/" method="post">
+
+        <label for="name">Your Name (Optional) : </label>
+        <input type="name" name="name" >
+        <br><hr>
+        <label for="from">Your email : </label>
+        <input type="email" name="from" required>
+        <br><hr>
+        
+        <label for="to">To : </label>
+        <input type="email" name="to" required>
+        <br><hr>
+        <label for="subject">Subject : </label>
+        <input type="text" name="subject" >
+        <br><hr>
+        <label for="body">Body : </label>
+        <input type="text" name="body" required>
+        <br><hr>
+
+
+        <p>Send frequency : </p>
+        <input type="radio" name="schedule" id="30sec" value="30sec" >
+        <label for="30sec">Every 30 seconds</label>
+
+        <input type="radio" id="weekly" name="schedule" value="weekly" checked>
+         <label for="weekly">Weekly</label>
+
+        <input type="radio" id="monthly" name="schedule" value="monthly" >
+         <label for="monthly">Monthly</label>
+        
+        <input type="radio" id="yearly" name="schedule" value="yearly">
+         <label for="yearly">Yearly</label>
+
+        <br><hr>
+        <button type="submit">Schedule</button>
+    </form>
+
+    <button><a href="/users/logout">Logout</a></button>
+
+</body>
+</html>
