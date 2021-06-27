@@ -53,7 +53,8 @@ app.use(function(req,res,next){
 
 app.use("/users", require('./routes/users'));
 
-mongoose.connect('mongodb://localhost:27017/mailInfoDB', {useNewUrlParser: true, useUnifiedTopology: true});
+//mongoose.connect('mongodb://localhost:27017/mailInfoDB', {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect('mongodb+srv://guptaakshika:thisishelp@cluster0.iz9cc.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {useNewUrlParser: true, useUnifiedTopology: true});
 /****************************************************************************************************** */
 
 
@@ -357,4 +358,9 @@ app.get('/home',ensureAuthenticated ,function (req,res) {
 //   });
 
 
-app.listen(3000);
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 3000;
+}
+
+app.listen(port);
