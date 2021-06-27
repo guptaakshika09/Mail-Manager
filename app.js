@@ -53,9 +53,49 @@ app.use(function(req,res,next){
 
 app.use("/users", require('./routes/users'));
 
-mongoose.connect('mongodb://localhost:27017/questionsDB', {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect('mongodb://localhost:27017/mailInfoDB', {useNewUrlParser: true, useUnifiedTopology: true});
 /****************************************************************************************************** */
 
+
+
+const Future= new mongoose.Schema({
+    user:String,
+    
+    mails:[{from: String,
+        to:String,
+        subject:String,
+        body:String,
+        frequency:String,
+        mailDate : String}],
+
+})
+
+const History= new mongoose.Schema({
+    user:String,
+    
+    mails:[{from: String,
+        to:String,
+        subject:String,
+        body:String,
+        frequency:String,
+        mailDate : String}],
+   
+})
+
+
+const history = mongoose.model('History',History);
+const future = mongoose.model('Future',Future);
+
+
+
+// var currentdate = new Date(); 
+//                 var datetime =  currentdate.getDate() + "/"
+//                 + (currentdate.getMonth()+1)  + "/" 
+//                 + currentdate.getFullYear() + " @ "  
+//                 + currentdate.getHours() + ":"  
+//                 + currentdate.getMinutes();
+
+// console.log(currentdate);
 
 // app.get("/",ensureAuthenticated ,function (req,res) {
 //     res.render("home.ejs",{
@@ -67,6 +107,10 @@ app.get('/',ensureAuthenticated ,function (req,res) {
     res.render("main.ejs");
 })
 
+function AddMinutesToDate(date, minutes) {
+    return new Date(date.getTime() + minutes*60000);
+}
+
 
 app.post('/',function (req,res) {
     var from=req.body.from;    
@@ -76,17 +120,84 @@ app.post('/',function (req,res) {
     var name=req.body.name;
     var schedule=req.body.schedule;
 
+
+    // history.find({user:req.user.email},function (err,user) {
+    //     console.log(user,err);
+    //     console.log(user.length)
+        
+    // })
+
+
+    future.find({user:req.user.email},function (err,user) {
+        if(user.length==0){
+            var u1 = new future({user:req.user.email});
+            future.insertMany([u1],function (err) {
+                if(err){console.log(err);}
+                else{
+                    future.findOneAndUpdate(
+                        {user:req.user.email},  
+                        {$push : {mails:{from:from,to:to,subject:subject,body:body,frequency:schedule,mailDate:day+" "+timeof}}},
+                        function (e,s) {
+                            if(e){console.log(e);}
+                            
+                        }
+                    )
+                }
+            });
+        }
+        else{
+            future.findOneAndUpdate(
+                {user:req.user.email},  
+                {$push : {mails:{from:from,to:to,subject:subject,body:body,frequency:schedule,mailDate:day+" "+timeof}}},
+                function (e,s) {
+                    if(e){console.log(e);}
+                    
+                }
+            )
+        }
+    })
+
+    
     var sc;
     if(schedule=='30sec'){
         sc='*/30 * * * * *';
     }
     else if(schedule=='weekly'){
-        var d = new Date();
+        
+        var pre = new Date();
+        var d = AddMinutesToDate(pre,2);
         var n = d.getDay();
-        sc='* * * * '+n;
+        var h = d.getHours();
+        var m = d.getMinutes();
+        
+        sc=`${m} ${h} * * ${n}`;
+        // 2s minute after current time everyweek
     }
+    else if(schedule=='monthly'){
+        var pre = new Date();
+        var d = AddMinutesToDate(pre,2);
+        var n = d.getDay();
+        var h = d.getHours();
+        var m = d.getMinutes();
+        var day=d.getDate();
+        
+        sc=`${m} ${h} ${day} * *`;
+    }
+    else{
+        //yearly
+        var pre = new Date();
+        var d = AddMinutesToDate(pre,2);
+        var n = d.getDay();
+        var h = d.getHours();
+        var m = d.getMinutes();
+        var day=d.getDate();
+        var month=d.getMonth()+1;
+        
+        sc=`${m} ${h} ${day} ${month} *`;
 
-    cron.schedule('*/15 * * * * *', () => {
+    }
+    //console.log(sc);
+    cron.schedule(sc, () => {
     //console.log('running every 15 sec ');
     
 
@@ -129,8 +240,61 @@ app.post('/',function (req,res) {
             
         }
         else {
+            let today=new Date();
+            let options={
+                year:"numeric",
+                day:"numeric",
+                month:"long"
+            };
+            let minute={ hour: '2-digit', minute: '2-digit' };
+            let timeof = today.toLocaleTimeString("en-us",minute);
+            let day=today.toLocaleDateString("en-us",options);
+
+            
+            history.find({user:req.user.email},function (err,user) {
+                if(user.length==0){
+                    var u1 = new history({user:req.user.email});
+                    history.insertMany([u1],function (err) {
+                        if(err){console.log(err);}
+                        else{
+                            history.findOneAndUpdate(
+                                {user:req.user.email},  
+                                {$push : {mails:{from:from,to:to,subject:subject,body:body,frequency:schedule,mailDate:day+" "+timeof}}},
+                                function (e,s) {
+                                    if(e){console.log(e);}
+                                    
+                                }
+                            )
+                        }
+                    });
+                }
+                else{
+                    history.findOneAndUpdate(
+                        {user:req.user.email},  
+                        {$push : {mails:{from:from,to:to,subject:subject,body:body,frequency:schedule,mailDate:day+" "+timeof}}},
+                        function (e,s) {
+                            if(e){console.log(e);}
+                            
+                        }
+                    )
+                }
+            })
+
+            // history.findOne({user:req.user.email},function (err,user){
+
+            // });
+            // history.findOneAndUpdate(
+            //     {user:req.user.email},  
+            //     {$push : {mails:{from:from,to:to,subject:subject,body:body,frequency:schedule,mailDate:day+" "+timeof}}},
+            //     function (e,s) {
+            //         if(e){console.log(e);}
+                    
+            //     }
+            // )
+            
+
             console.log('Mail sent : %s', info.response);
-           
+            
         }
     })
 
@@ -142,6 +306,11 @@ app.post('/',function (req,res) {
     
 })
 
+
+app.get('/history',function (req,res) {
+    
+    
+})
 
 // cron.schedule('*/5 * * * * *', () => {
 //     console.log('running every 5 sec ');
