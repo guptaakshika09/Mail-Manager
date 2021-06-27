@@ -5,21 +5,21 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <title>History</title>
+    <title>Home</title>
 </head>
 
 <body>
     <div class="jumbotron jumbotron-fluid">
         <div class="container">
-          <h1 class="display-4">History</h1>
+          <h1 class="display-4">Home</h1>
           
         </div>
       </div>
       <button><a href="/users/logout">Logout</a></button>
       <br>
       <button><a href="/">Dashboard</a></button>
-<hr>
 
+<hr>
 <%for(var i=0;i<mails.length;i++){ %>
 <p>from : <%=mails[i].from%>  </p>
 <p>to : <%=mails[i].to%>  </p>
@@ -28,6 +28,7 @@
 
 <p>body : <%=mails[i].body%>  </p>
 <p>schedule : <%=mails[i].frequency%>  </p>
+<p>Date : <%=mails[i].mailDate%>  </p>
 <hr>
 <%}%>
 </body>

@@ -113,7 +113,7 @@ function AddMinutesToDate(date, minutes) {
 
 
 app.post('/',function (req,res) {
-    var from=req.body.from;    
+    var from=req.user.email;    
     var to=req.body.to; 
     var subject=req.body.subject;  
     var body=req.body.body;
@@ -127,6 +127,15 @@ app.post('/',function (req,res) {
         
     // })
 
+    let today=new Date();
+    let options={
+        year:"numeric",
+        day:"numeric",
+        month:"long"
+    };
+    let minute={ hour: '2-digit', minute: '2-digit' };
+    let timeof1 = today.toLocaleTimeString("en-us",minute);
+    let day1=today.toLocaleDateString("en-us",options);
 
     future.find({user:req.user.email},function (err,user) {
         if(user.length==0){
@@ -136,8 +145,8 @@ app.post('/',function (req,res) {
                 else{
                     future.findOneAndUpdate(
                         {user:req.user.email},  
-                        {$push : {mails:{from:from,to:to,subject:subject,body:body,frequency:schedule,mailDate:day+" "+timeof}}},
-                        function (e,s) {
+                        {$push : {mails:{from:from,to:to,subject:subject,body:body,frequency:schedule,mailDate:day1+" "+timeof1}}},
+                        function (e,s) {1
                             if(e){console.log(e);}
                             
                         }
@@ -148,7 +157,7 @@ app.post('/',function (req,res) {
         else{
             future.findOneAndUpdate(
                 {user:req.user.email},  
-                {$push : {mails:{from:from,to:to,subject:subject,body:body,frequency:schedule,mailDate:day+" "+timeof}}},
+                {$push : {mails:{from:from,to:to,subject:subject,body:body,frequency:schedule,mailDate:day1+" "+timeof1}}},
                 function (e,s) {
                     if(e){console.log(e);}
                     
@@ -307,9 +316,40 @@ app.post('/',function (req,res) {
 })
 
 
-app.get('/history',function (req,res) {
-    
-    
+app.get('/history',ensureAuthenticated ,function (req,res) {
+
+    history.find({user:req.user.email},function (err,data) {
+        if(err)console.log(err);
+        //console.log(data);
+        if(data.length==0){
+            res.render('nothing.ejs',{title:"History"});
+        }
+        else{
+            var revMails=data[0].mails;
+            revMails.reverse();
+            res.render('history.ejs',{mails:revMails})
+        }
+    })
+
+
+})
+
+app.get('/home',ensureAuthenticated ,function (req,res) {
+
+    future.find({user:req.user.email},function (err,data) {
+        if(err)console.log(err);
+        //console.log(data);
+        if(data.length==0){
+            res.render('nothing.ejs',{title:"Future"});
+        }
+        else{
+            var revMails=data[0].mails;
+            revMails.reverse();
+            res.render('future.ejs',{mails:revMails})
+        }
+    })
+
+
 })
 
 // cron.schedule('*/5 * * * * *', () => {
